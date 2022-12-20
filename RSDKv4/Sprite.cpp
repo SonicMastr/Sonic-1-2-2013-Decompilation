@@ -306,7 +306,9 @@ int LoadBMPFile(const char *filePath, byte sheetID)
 int LoadGIFFile(const char *filePath, byte sheetID)
 {
     FileInfo info;
+    printf("Loading file: %s\n", filePath);
     if (LoadFile(filePath, &info)) {
+        printf("Loaded file: %s\n", filePath);
         GFXSurface *surface = &gfxSurface[sheetID];
         StrCopy(surface->fileName, filePath);
 
@@ -377,8 +379,10 @@ int LoadGIFFile(const char *filePath, byte sheetID)
         }
 
         CloseFile();
+        printf("Returning\n");
         return true;
     }
+    printf("Couldn't load file: %s\n", filePath);
     return false;
 }
 int LoadPVRFile(const char *filePath, byte sheetID)

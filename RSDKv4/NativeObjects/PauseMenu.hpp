@@ -1,6 +1,21 @@
 #ifndef NATIVE_PAUSEMENU_H
 #define NATIVE_PAUSEMENU_H
 
+#if RETRO_SOFTWARE_RENDER
+
+struct NativeEntity_PauseMenu : NativeEntityBase {
+    byte state;
+    int timer;
+    int barPos;
+    byte selectedOption;
+    TextMenu *menu;
+    byte touchControls;
+
+    int lastSurfaceNo;
+};
+
+#else
+
 enum PauseMenuButtons {
     PMB_CONTINUE,
     PMB_RESTART,
@@ -66,6 +81,8 @@ struct NativeEntity_PauseMenu : NativeEntityBase {
     NativeEntity_FadeScreen *devMenuFade;
 #endif
 };
+
+#endif //RETRO_SOFTWARE_RENDER
 
 void PauseMenu_Create(void *objPtr);
 void PauseMenu_Main(void *objPtr);

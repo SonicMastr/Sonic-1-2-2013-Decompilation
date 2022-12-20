@@ -53,6 +53,12 @@ void ProcessStartupObjects()
     memset(foreachStack, -1, sizeof(foreachStack));
     memset(jumpTableStack, 0, sizeof(jumpTableStack));
 
+#if !RETRO_USE_ORIGINAL_CODE && RETRO_SOFTWARE_RENDER
+    int flagStore  = GetGlobalVariableByName("options.stageSelectFlag");
+    int flagStore2 = GetGlobalVariableByName("options.saveSlot");
+    SetGlobalVariableByName("options.stageSelectFlag", 1); // temp, to allow game opts
+#endif
+
     for (int i = 0; i < OBJECT_COUNT; ++i) {
         ObjectScript *scriptInfo    = &objectScriptList[i];
         objectEntityPos             = TEMPENTITY_START;
@@ -61,12 +67,47 @@ void ProcessStartupObjects()
         scriptInfo->spriteSheetID   = 0;
         entity->type                = i;
 
+#if !RETRO_USE_ORIGINAL_CODE && RETRO_SOFTWARE_RENDER
+        // Man this is so hacky, I hope there's a better way to do this
+        if (StrComp("StageSetup", typeNames[i])) {
+            SetGlobalVariableByName("options.saveSlot", 0);
+        }
+#endif
+
         if (scriptCode[scriptInfo->eventStartup.scriptCodePtr] > 0)
             ProcessScript(scriptInfo->eventStartup.scriptCodePtr, scriptInfo->eventStartup.jumpTablePtr, EVENT_SETUP);
         scriptInfo->frameCount = scriptFrameCount - scriptInfo->frameListOffset;
+
+#if !RETRO_USE_ORIGINAL_CODE && RETRO_SOFTWARE_RENDER
+        if (StrComp("StageSetup", typeNames[i])) {
+            SetGlobalVariableByName("options.saveSlot", flagStore2);
+        }
+#endif
     }
     entity->type  = 0;
     curObjectType = 0;
+
+#if !RETRO_USE_ORIGINAL_CODE && RETRO_SOFTWARE_RENDER
+    // Temp(?): forces game options to load on non-no save slots
+    SetGlobalVariableByName("options.stageSelectFlag", flagStore);
+    if (GetGlobalVariableByName("options.gameMode") == 1) {
+        if (Engine.gameType == GAME_SONIC1) {
+            SetGlobalVariableByName("options.spindash", saveRAM[0x101]);
+            SetGlobalVariableByName("options.speedCap", saveRAM[0x102]);
+            SetGlobalVariableByName("options.airSpeedCap", saveRAM[0x103]);
+            SetGlobalVariableByName("options.spikeBehavior", saveRAM[0x104]);
+            SetGlobalVariableByName("options.shieldType", saveRAM[0x105]);
+            SetGlobalVariableByName("options.superStates", saveRAM[0x106]);
+        }
+        else {
+            SetGlobalVariableByName("options.airSpeedCap", saveRAM[0x101]);
+            SetGlobalVariableByName("options.tailsFlight", saveRAM[0x102]);
+            SetGlobalVariableByName("options.superTails", saveRAM[0x103]);
+            SetGlobalVariableByName("options.spikeBehavior", saveRAM[0x104]);
+            SetGlobalVariableByName("options.shieldType", saveRAM[0x105]);
+        }
+    }
+#endif
 }
 
 void ProcessObjects()
@@ -427,6 +468,9 @@ void InitNativeObjectSystem()
 
     Engine.globalBoxRegion = saveGame->boxRegion;
     SetGameVolumes(saveGame->musVolume, saveGame->sfxVolume);
+#if RETRO_SOFTWARE_RENDER
+    CREATE_ENTITY(RetroGameLoop);
+#else
 #if !RETRO_USE_ORIGINAL_CODE
     if (skipStartMenu) {
         CREATE_ENTITY(RetroGameLoop);
@@ -435,7 +479,10 @@ void InitNativeObjectSystem()
     }
     else
 #endif
+#endif
+#if !RETRO_SOFTWARE_RENDER
         CREATE_ENTITY(SegaSplash);
+#endif
 }
 NativeEntity *CreateNativeObject(void (*create)(void *objPtr), void (*main)(void *objPtr))
 {
@@ -530,11 +577,15 @@ void ProcessNativeObjects()
 
 void RestoreNativeObjects()
 {
+#if RETRO_SOFTWARE_RENDER
+    initStartMenu(0);
+#else
     memcpy(activeEntityList, backupEntityList, sizeof(activeEntityList));
     memcpy(objectEntityBank, objectEntityBackup, sizeof(objectEntityBank));
     nativeEntityCount = nativeEntityCountBackup;
 
     CREATE_ENTITY(FadeScreen)->state = FADESCREEN_STATE_MENUFADEIN;
+#endif
 }
 
 void RestoreNativeObjectsNoFade()

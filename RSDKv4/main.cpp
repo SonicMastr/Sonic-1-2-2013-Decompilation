@@ -6,6 +6,10 @@
 #include "Windows.h"
 #endif
 
+#ifdef __vita__
+int _newlib_heap_size_user = 100 * 1024 * 1024;
+#endif
+
 void parseArguments(int argc, char *argv[])
 {
     for (int a = 0; a < argc; ++a) {

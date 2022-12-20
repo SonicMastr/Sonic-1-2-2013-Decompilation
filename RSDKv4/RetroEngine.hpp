@@ -38,6 +38,7 @@ typedef unsigned int uint;
 // Custom Platforms start here
 #define RETRO_UWP   (7)
 #define RETRO_LINUX (8)
+#define RETRO_VITA  (9)
 
 // Platform types (Game manages platform-specific code such as HUD position using this rather than the above)
 #define RETRO_STANDARD (0)
@@ -75,6 +76,10 @@ typedef unsigned int uint;
 #elif defined(__linux__)
 #define RETRO_PLATFORM   (RETRO_LINUX)
 #define RETRO_DEVICETYPE (RETRO_STANDARD)
+#elif defined(__vita__)
+#define RETRO_PLATFORM   (RETRO_VITA)
+#define RETRO_DEVICETYPE (RETRO_STANDARD)
+#undef RETRO_USE_NETWORKING
 #else
 //#error "No Platform was defined"
 #define RETRO_PLATFORM   (RETRO_WIN)
@@ -91,7 +96,7 @@ typedef unsigned int uint;
 #endif
 
 #if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_OSX || RETRO_PLATFORM == RETRO_LINUX || RETRO_PLATFORM == RETRO_UWP                       \
-    || RETRO_PLATFORM == RETRO_ANDROID
+    || RETRO_PLATFORM == RETRO_ANDROID || RETRO_PLATFORM == RETRO_VITA
 #define RETRO_USING_SDL1 (0)
 #define RETRO_USING_SDL2 (1)
 #else // Since its an else & not an elif these platforms probably aren't supported yet
@@ -121,7 +126,11 @@ typedef unsigned int uint;
 #define RETRO_RENDERTYPE (RETRO_HW_RENDER)
 #endif
 
+#if RETRO_PLATFORM == RETRO_VITA
+#define RETRO_USING_OPENGL (0)
+#else
 #define RETRO_USING_OPENGL (1)
+#endif
 
 #define RETRO_SOFTWARE_RENDER (RETRO_RENDERTYPE == RETRO_SW_RENDER)
 //#define RETRO_HARDWARE_RENDER (RETRO_RENDERTYPE == RETRO_HW_RENDER)
@@ -187,7 +196,7 @@ typedef unsigned int uint;
 #else
 
 // use *this* macro to determine what platform the game thinks its running on (since only the first 7 platforms are supported natively by scripts)
-#if RETRO_PLATFORM == RETRO_LINUX
+#if RETRO_PLATFORM == RETRO_LINUX || RETRO_PLATFORM == RETRO_VITA
 #define RETRO_GAMEPLATFORMID (RETRO_WIN)
 #elif RETRO_PLATFORM == RETRO_UWP
 #define RETRO_GAMEPLATFORMID (UAP_GetRetroGamePlatformId())
@@ -202,7 +211,7 @@ typedef unsigned int uint;
 // 1 = S2 release RSDKv4 version
 // 2 = S3 POC RSDKv4 version (I have no idea how we have this but woohoo apparently)
 // 3 = Sonic Origins version
-#define RSDK_REVISION (3)
+#define RSDK_REVISION (2)
 
 // reverts opcode list back to how it was in earliest S1 builds, fixes bugs on some datafiles
 #define RETRO_REV00 (RSDK_REVISION == 0)
@@ -258,6 +267,9 @@ enum RetroStates {
 #endif
 #if RETRO_USE_MOD_LOADER
     ENGINE_INITMODMENU = 0x82,
+#endif
+#if RETRO_SOFTWARE_RENDER
+    ENGINE_STARTMENU = 0x83,
 #endif
 };
 
@@ -435,7 +447,11 @@ public:
     byte gameType = GAME_UNKNOWN;
 #if RETRO_USE_MOD_LOADER
     bool modMenuCalled = false;
+#ifdef SONIC_1
+    bool forceSonic1   = true;
+#else
     bool forceSonic1   = false;
+#endif
 #endif
 #endif
 

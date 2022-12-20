@@ -38,8 +38,10 @@ namespace fs = std::filesystem;
 
 fs::path resolvePath(fs::path given)
 {
+#if 0
     if (given.is_relative())
         given = fs::current_path() / given; // thanks for the weird syntax!
+#endif
     for (auto &p : fs::directory_iterator{ given.parent_path() }) {
         char pbuf[0x100];
         char gbuf[0x100];
@@ -510,6 +512,45 @@ void RefreshEngine()
     }
 
     SaveMods();
+
+#if RETRO_SOFTWARE_RENDER
+    if (saveRAM[0x100] != Engine.gameType) {
+        saveRAM[0x100] = Engine.gameType;
+        if (Engine.gameType == GAME_SONIC1) {
+            saveRAM[0x101] = 1;
+            saveRAM[0x102] = 0;
+            saveRAM[0x103] = 0;
+            saveRAM[0x104] = 0;
+            saveRAM[0x105] = 0;
+            saveRAM[0x106] = 0;
+        }
+        else {
+            saveRAM[0x101] = 0;
+            saveRAM[0x102] = 1;
+            saveRAM[0x103] = 1;
+            saveRAM[0x104] = 0;
+            saveRAM[0x105] = 0;
+        }
+        WriteSaveRAMData();
+    }
+    else {
+        if (Engine.gameType == GAME_SONIC1) {
+            SetGlobalVariableByName("options.spindash", saveRAM[0x101]);
+            SetGlobalVariableByName("options.speedCap", saveRAM[0x102]);
+            SetGlobalVariableByName("options.airSpeedCap", saveRAM[0x103]);
+            SetGlobalVariableByName("options.spikeBehavior", saveRAM[0x104]);
+            SetGlobalVariableByName("options.shieldType", saveRAM[0x105]);
+            SetGlobalVariableByName("options.superStates", saveRAM[0x106]);
+        }
+        else {
+            SetGlobalVariableByName("options.airSpeedCap", saveRAM[0x101]);
+            SetGlobalVariableByName("options.tailsFlight", saveRAM[0x102]);
+            SetGlobalVariableByName("options.superTails", saveRAM[0x103]);
+            SetGlobalVariableByName("options.spikeBehavior", saveRAM[0x104]);
+            SetGlobalVariableByName("options.shieldType", saveRAM[0x105]);
+        }
+    }
+#endif
 
     ReadSaveRAMData();
     ReadUserdata();

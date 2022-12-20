@@ -1007,6 +1007,7 @@ void ShowLeaderboardsScreen()
 bool disableFocusPause_Store = false;
 void Connect2PVS(int *gameLength, int *itemMode)
 {
+#if RETRO_USE_NETWORKING
     PrintLog("Attempting to connect to 2P game (%d) (%d)", *gameLength, *itemMode);
 
     multiplayerDataIN.type = 0;
@@ -1028,6 +1029,7 @@ void Connect2PVS(int *gameLength, int *itemMode)
         RunNetwork();
 #endif
     }
+#endif
 }
 void Disconnect2PVS()
 {
@@ -1276,7 +1278,7 @@ void GetWindowBorderless() { scriptEng.checkResult = Engine.borderless; }
 void SetScreenWidth(int *width, int *unused)
 {
     SCREEN_XSIZE_CONFIG = *width;
-#if RETRO_PLATFORM != RETRO_ANDROID
+#if RETRO_PLATFORM != RETRO_ANDROID || RETRO_PLATFORM != RETRO_VITA
     SetScreenDimensions(SCREEN_XSIZE_CONFIG * Engine.windowScale, SCREEN_YSIZE * Engine.windowScale);
 #endif
 #if RETRO_USING_SDL2

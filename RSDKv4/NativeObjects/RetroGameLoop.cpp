@@ -4,7 +4,9 @@ void InitPauseMenu()
 {
     PauseSound();
     ClearNativeObjects();
+#if RETRO_SOFTWARE_RENDER == 0
     CREATE_ENTITY(MenuBG);
+#endif
     CREATE_ENTITY(PauseMenu);
 }
 
@@ -44,6 +46,7 @@ void RetroGameLoop_Main(void *objPtr)
             Engine.LoadGameConfig("Data/Game/GameConfig.bin");
             InitDevMenu();
             ResetCurrentStageFolder();
+            CREATE_ENTITY(RetroGameLoop);
             break;
 
         case ENGINE_WAIT: break;
@@ -132,6 +135,11 @@ void RetroGameLoop_Main(void *objPtr)
             stageMode                    = DEVMENU_MODMENU;
             break;
 #endif
+        case ENGINE_STARTMENU:
+            processStartMenu();
+            TransferRetroBuffer();
+            RenderRetroBuffer(64, 160.0);
+            break;
         default:
             PrintLog("GameMode '%d' Called", Engine.gameMode);
             activeStageList   = 0;

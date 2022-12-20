@@ -81,7 +81,7 @@ int InitRenderDevice()
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 #endif
 #endif
-#if RETRO_DEVICETYPE == RETRO_MOBILE
+#if RETRO_DEVICETYPE == RETRO_MOBILE || RETRO_PLATFORM == RETRO_VITA
     Engine.startFullScreen = true;
 
     SDL_DisplayMode dm;
@@ -231,7 +231,7 @@ int InitRenderDevice()
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-#if RETRO_PLATFORM == RETRO_ANDROID
+#if RETRO_PLATFORM == RETRO_ANDROID || RETRO_PLATFORM == RETRO_VITA
     Engine.windowScale     = 1;
     displaySettings.width  = SCREEN_XSIZE;
     displaySettings.height = SCREEN_YSIZE;
@@ -262,12 +262,12 @@ int InitRenderDevice()
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
     glEnable(GL_LIGHT0);
 
-#if RETRO_PLATFORM == RETRO_ANDROID
+#if RETRO_PLATFORM == RETRO_ANDROID || RETRO_PLATFORM == RETRO_VITA
     Engine.startFullScreen = true;
 #endif
 #endif
 
-#if RETRO_PLATFORM != RETRO_ANDROID
+#if RETRO_PLATFORM != RETRO_ANDROID && RETRO_PLATFORM != RETRO_VITA
     SetScreenDimensions(SCREEN_XSIZE_CONFIG * Engine.windowScale, SCREEN_YSIZE * Engine.windowScale);
 #else
     SetScreenDimensions(SCREEN_XSIZE, SCREEN_YSIZE);

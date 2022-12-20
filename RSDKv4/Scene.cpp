@@ -344,7 +344,9 @@ void ProcessStage(void)
                 PauseSound();
             }
 
+#if RETRO_USE_NETWORKING
             if (!waitForVerify) {
+#endif
                 if (timeEnabled) {
                     if (++frameCounter == 60) {
                         frameCounter = 0;
@@ -378,7 +380,9 @@ void ProcessStage(void)
                         SetPlayerLockedScreenPosition(&objectEntityList[cameraTarget]);
                     }
                 }
+#if RETRO_USE_NETWORKING
             }
+#endif
 
             ProcessParallaxAutoScroll();
             DrawStageGFX();

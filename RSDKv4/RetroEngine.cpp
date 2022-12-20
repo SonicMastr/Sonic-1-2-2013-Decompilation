@@ -2,7 +2,7 @@
 
 #if !RETRO_USE_ORIGINAL_CODE
 bool usingCWD        = false;
-bool engineDebugMode = false;
+bool engineDebugMode = true;
 #endif
 
 #if RETRO_PLATFORM == RETRO_ANDROID
@@ -445,6 +445,45 @@ void RetroEngine::Init()
 
     ReadSaveRAMData();
 
+#if RETRO_SOFTWARE_RENDER
+    if (saveRAM[0x100] != Engine.gameType) {
+        saveRAM[0x100] = Engine.gameType;
+        if (Engine.gameType == GAME_SONIC1) {
+            saveRAM[0x101] = 1;
+            saveRAM[0x102] = 0;
+            saveRAM[0x103] = 0;
+            saveRAM[0x104] = 0;
+            saveRAM[0x105] = 0;
+            saveRAM[0x106] = 0;
+        }
+        else {
+            saveRAM[0x101] = 0;
+            saveRAM[0x102] = 1;
+            saveRAM[0x103] = 1;
+            saveRAM[0x104] = 0;
+            saveRAM[0x105] = 0;
+        }
+        WriteSaveRAMData();
+    }
+    else {
+        if (Engine.gameType == GAME_SONIC1) {
+            SetGlobalVariableByName("options.spindash", saveRAM[0x101]);
+            SetGlobalVariableByName("options.speedCap", saveRAM[0x102]);
+            SetGlobalVariableByName("options.airSpeedCap", saveRAM[0x103]);
+            SetGlobalVariableByName("options.spikeBehavior", saveRAM[0x104]);
+            SetGlobalVariableByName("options.shieldType", saveRAM[0x105]);
+            SetGlobalVariableByName("options.superStates", saveRAM[0x106]);
+        }
+        else {
+            SetGlobalVariableByName("options.airSpeedCap", saveRAM[0x101]);
+            SetGlobalVariableByName("options.tailsFlight", saveRAM[0x102]);
+            SetGlobalVariableByName("options.superTails", saveRAM[0x103]);
+            SetGlobalVariableByName("options.spikeBehavior", saveRAM[0x104]);
+            SetGlobalVariableByName("options.shieldType", saveRAM[0x105]);
+        }
+    }
+#endif
+
     if (Engine.gameType == GAME_SONIC1) {
         AddAchievement("Ramp Ring Acrobatics",
                        "Without touching the ground,\rcollect all the rings in a\rtrapezoid formation in Green\rHill Zone Act 1");
@@ -477,8 +516,13 @@ void RetroEngine::Init()
 
     if (skipStart)
         Engine.gameMode = ENGINE_MAINGAME;
-    else
+    else {
+    #if RETRO_SOFTWARE_RENDER
+        initStartMenu(0);
+    #else
         Engine.gameMode = ENGINE_WAIT;
+    #endif
+    }  
 #endif
 }
 
